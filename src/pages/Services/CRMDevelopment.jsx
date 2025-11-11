@@ -87,7 +87,7 @@ export default function CRMDevelopment() {
             <span className="text-green-400 text-sm font-semibold">Enterprise CRM Solutions</span>
           </motion.div>
           
-          <h1 className="text-5xl md:text-7xl font-bold leading-tight mb-6 bg-gradient-to-r from-white via-green-100 to-green-400 bg-clip-text text-transparent">
+          <h1 className="text-5xl md:text-7xl font-bold leading-tight mb-6">
             Custom CRM Development
           </h1>
 
@@ -109,7 +109,7 @@ export default function CRMDevelopment() {
             transition={{ duration: 0.8 }}
           >
             <h2 className="text-4xl md:text-5xl font-bold mb-6">
-              Powerful Features for <span className="text-green-400">Modern Teams</span>
+              Powerful Features for Modern Teams
             </h2>
             <p className="text-gray-400 text-lg mb-8">
               Our CRM solutions integrate intelligent automation, real-time data, and scalable architecture to help your business grow exponentially.
@@ -176,7 +176,7 @@ export default function CRMDevelopment() {
           className="text-center mb-16"
         >
           <h2 className="text-4xl md:text-5xl font-bold mb-4">
-            Measurable <span className="text-green-400">Business Impact</span>
+            Measurable Business Impact
           </h2>
           <p className="text-gray-400 text-lg max-w-3xl mx-auto">
             Our CRM solutions deliver tangible results that drive growth and efficiency across your organization.
@@ -214,7 +214,7 @@ export default function CRMDevelopment() {
           className="text-center mb-16"
         >
           <h2 className="text-4xl md:text-5xl font-bold mb-4">
-            Solutions for <span className="text-green-400">Every Industry</span>
+            Solutions for Every Industry
           </h2>
           <p className="text-gray-400 text-lg max-w-3xl mx-auto">
             We build customized CRM systems tailored to the unique needs of your industry.
@@ -253,7 +253,7 @@ export default function CRMDevelopment() {
           className="text-center mb-16"
         >
           <h2 className="text-4xl md:text-5xl font-bold mb-4">
-            Our Development <span className="text-green-400">Process</span>
+            Our Development Process
           </h2>
           <p className="text-gray-400 text-lg max-w-3xl mx-auto">
             A proven methodology that ensures your CRM is delivered on time, within budget, and exceeds expectations.

@@ -121,7 +121,7 @@ const handleSubmit = async (e) => {
           <div className="container mx-auto px-6">
             {/* Heading */}
             <div className="text-center mb-16 animate-fade-in">
-              <h2 className="text-4xl md:text-5xl font-extrabold text-green-500 mb-4 mt-10">
+              <h2 className="text-4xl md:text-5xl font-bold text-white-500 mb-4 mt-10">
                 Contact Us
               </h2>
               <p className="text-lg text-gray-300 mt-4 max-w-2xl mx-auto leading-relaxed">

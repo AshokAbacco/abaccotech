@@ -110,8 +110,8 @@ function WhyChooseUs() {
           <div className="container mx-auto px-6">
             {/* Heading */}
             <div className="text-center mb-16 animate-fade-in">
-              <h2 className="text-5xl md:text-6xl font-bold text-green-500 mb-4">
-                <span className="text-white">Why</span> Choose Us
+              <h2 className="text-5xl md:text-6xl font-bold text-white-500 mb-4">
+                 Why  Choose Us
               </h2>
               <p className="text-lg text-gray-300 mt-4 max-w-2xl mx-auto leading-relaxed">
                 At Abacco Technology, we combine innovation, quality, and

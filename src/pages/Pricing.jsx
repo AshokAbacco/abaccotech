@@ -1,15 +1,18 @@
+// src/pricing.jsx
 import { CheckCircle, Globe, Mail, TrendingUp, RefreshCw } from "lucide-react";
 import { motion } from "framer-motion";
 import Layout from "../Components/Layout";
 
 export default function Pricing() {
+
   const plans = [
     {
       title: "Starter",
-      price: "₹7,999",
+      price: "₹1",
       period: "One Time",
       features: ["Basic Website", "Up to 5 Pages", "Mobile Responsive", "1 Month Support"],
       highlighted: false,
+      priceId: "price_123YourStarterID", 
     },
     {
       title: "Professional",
@@ -17,6 +20,7 @@ export default function Pricing() {
       period: "One Time",
       features: ["Dynamic Website", "Up to 10 Pages", "SEO Ready", "3 Months Support"],
       highlighted: true,
+      priceId: "price_123YourProID",
     },
     {
       title: "Premium",
@@ -24,6 +28,7 @@ export default function Pricing() {
       period: "One Time",
       features: ["E-Commerce Website", "Unlimited Pages", "Payment Gateway Integration", "6 Months Support"],
       highlighted: false,
+      priceId: "price_123YourPremiumID",
     },
   ];
 
@@ -53,6 +58,45 @@ export default function Pricing() {
       description: "Annual maintenance and updates for your website"
     }
   ];
+
+  const handleRazorpayCheckout = async (amount) => {
+    try {
+      const res = await fetch("http://localhost:5000/create-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount }),
+      });
+      
+      const data = await res.json();
+      if (!data.id) {
+        alert("Failed to create payment order.");
+        return;
+      }
+
+      const options = {
+        key: "rzp_live_ReYUWfeZHoe7IE",
+        amount: data.amount,
+        currency: "INR",
+        name: "Website Plan Payment",
+        description: "Purchase Website Plan",
+        order_id: data.id,
+        handler: function (response) {
+          alert("Payment successful! Payment ID: " + response.razorpay_payment_id);
+        },
+        theme: { color: "#22c55e" },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+
+    } catch (error) {
+      console.error(error);
+      alert("Payment failed.");
+    }
+  };
+
+
+
 
   return (
     <Layout>
@@ -95,13 +139,13 @@ export default function Pricing() {
                   ))}
                 </div>
 
-                <a
-                  href="/contact"
-                  className={`block text-center font-semibold py-2 rounded-lg transition
-                ${plan.highlighted ? "bg-gray-900 hover:bg-gray-800 text-white" : "bg-green-600 hover:bg-green-500 text-white"}`}
-                >
-                  Get Started
-                </a>
+               <button
+                onClick={() => handleRazorpayCheckout(Number(plan.price.replace(/\D/g, "")) * 100)}
+                className={`block text-center font-semibold py-2 rounded-lg bg-green-600 hover:bg-green-500 text-white`}
+              >
+                Pay Now
+              </button>
+
               </motion.div>
             ))}
           </div>

@@ -15,7 +15,9 @@ import WhyChooseUs from "./pages/WhyChooseUs";
 import Contact from "./pages/Contact";
 import Pricing from "./pages/Pricing";
 import RefundPolicy from "./pages/RefundPolicy";
-
+import TermsService from "./pages/TermsService";
+import PrivacyPolicy from "./pages/PrivacyPolicy"
+import Success from "./Components/Success"
 function App() {
   return (
     <BrowserRouter>
@@ -35,7 +37,11 @@ function App() {
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/refund-policy" element={<RefundPolicy />} />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
+        <Route path="/terms" element={<TermsService />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/success" element={<Success />} />
+
       </Routes>
     </BrowserRouter>
   ); 

@@ -46,8 +46,8 @@ function About() {
                 About Us
               </span>
             </div>
-            <h1 className="text-5xl md:text-6xl font-bold text-green-500 mb-6 leading-tight">
-              Building Digital <span className="text-white">Excellence</span>
+            <h1 className="text-5xl md:text-6xl font-bold text-white-500 mb-6 leading-tight">
+              Building Digital Excellence
             </h1>
             <p className="text-lg md:text-xl text-white-600 max-w-3xl mx-auto leading-relaxed">
               We design, build, and scale digital products that accelerate business growth and drive innovation across industries.
@@ -94,7 +94,7 @@ function About() {
           {/* Core Values Section */}
           <div className="mb-20">
             <div className="text-center mb-12">
-              <h2 className="text-4xl font-bold text-green-500 mb-4">Our Core Values</h2>
+              <h2 className="text-4xl font-bold mb-4">Our Core Values</h2>
               <p className="text-white-600 text-lg">The principles that guide everything we do</p>
             </div>
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">

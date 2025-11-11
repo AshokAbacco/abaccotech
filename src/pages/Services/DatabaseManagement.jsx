@@ -119,10 +119,7 @@ export default function DatabaseManagement() {
 
             {/* Main Heading */}
             <h1 className="text-5xl md:text-7xl font-bold leading-tight tracking-tight">
-              Database
-              <span className="mt-2 text-green-500  animate-gradient">
-                &nbsp;Management
-              </span>
+              Database Management
             </h1>
 
             <p className="text-gray-400 text-xl max-w-2xl mx-auto leading-relaxed">

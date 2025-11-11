@@ -75,10 +75,7 @@ export default function ApplicationDevelopment() {
               </div>
               
               <h1 className="text-5xl md:text-7xl font-bold leading-tight">
-                Powerful
-                <span className="block mt-2 bg-gradient-to-r from-green-400 to-emerald-500 text-transparent bg-clip-text">
-                  Application Development
-                </span>
+                Powerful Application Development
               </h1>
               
               <p className="text-xl text-gray-300 leading-relaxed">
@@ -132,7 +129,7 @@ export default function ApplicationDevelopment() {
                 <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-2xl mb-4 group-hover:scale-110 transition-transform duration-300">
                   <stat.icon className="w-8 h-8 text-green-400" />
                 </div>
-                <div className="text-4xl font-bold bg-gradient-to-r from-green-400 to-emerald-500 text-transparent bg-clip-text mb-2">
+                <div className="text-4xl font-bold mb-2">
                   {stat.value}
                 </div>
                 <div className="text-gray-400">{stat.label}</div>
@@ -146,7 +143,7 @@ export default function ApplicationDevelopment() {
       <section className="container mx-auto px-6 py-20">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold mb-4">
-            What We <span className="bg-gradient-to-r from-green-400 to-emerald-500 text-transparent bg-clip-text">Offer</span>
+            What We  Offer 
           </h2>
           <p className="text-xl text-gray-400 max-w-2xl mx-auto">
             Comprehensive development services tailored to your business needs
@@ -189,7 +186,7 @@ export default function ApplicationDevelopment() {
       <section className="container mx-auto px-6 py-20">
         <div className="text-center mb-12">
           <h2 className="text-4xl font-bold mb-4">
-            Our <span className="bg-gradient-to-r from-green-400 to-emerald-500 text-transparent bg-clip-text">Technology Stack</span>
+            Our  Technology Stack 
           </h2>
           <p className="text-gray-400 text-lg">Cutting-edge tools and frameworks we use</p>
         </div>
@@ -250,7 +247,7 @@ export default function ApplicationDevelopment() {
         <div className="container mx-auto px-6">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold mb-4">
-              Our <span className="bg-gradient-to-r from-green-400 to-emerald-500 text-transparent bg-clip-text">Development Process</span>
+              Our  Development Process 
             </h2>
             <p className="text-gray-400 text-lg">A proven methodology for successful delivery</p>
           </div>
@@ -290,10 +287,8 @@ export default function ApplicationDevelopment() {
               <h2 className="text-5xl font-bold leading-tight">
                 Built with{' '}
                 <span className="relative inline-block">
-                  <span className="bg-gradient-to-r from-green-400 via-emerald-500 to-green-400 text-transparent bg-clip-text animate-gradient">
-                    Excellence
-                  </span>
-                  <div className="absolute -bottom-2 left-0 right-0 h-1 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full"></div>
+                     Excellence
+                   <div className="absolute -bottom-2 left-0 right-0 h-1 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full"></div>
                 </span>
               </h2>
               <p className="text-gray-400 text-lg leading-relaxed">

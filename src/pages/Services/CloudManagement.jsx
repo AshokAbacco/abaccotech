@@ -58,10 +58,8 @@ export default function CloudManagement() {
               </div>
 
               <h1 className="text-5xl md:text-6xl font-bold leading-tight animate-fade-in">
-                Cloud 
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-500">
-                    &nbsp; Management
-                </span>
+                Cloud  Management
+                
               </h1>
 
               <p className="text-gray-300 text-lg max-w-xl mx-auto">
@@ -88,7 +86,7 @@ export default function CloudManagement() {
                       <stat.icon className="w-8 h-8 text-green-400" />
                     </div>
                   </div>
-                  <h3 className="text-4xl font-bold text-green-400 mb-2 group-hover:scale-110 transition-transform">{stat.value}</h3>
+                  <h3 className="text-4xl font-bold text-white mb-2 group-hover:scale-110 transition-transform">{stat.value}</h3>
                   <p className="text-gray-400">{stat.label}</p>
                 </div>
               ))}
@@ -99,7 +97,7 @@ export default function CloudManagement() {
         {/* SERVICES */}
         <section className="py-20 container mx-auto px-6">
           <h2 className="text-center text-4xl font-bold mb-14">
-            Our <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-500">Cloud Expertise</span>
+            Our Cloud Expertise 
           </h2>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">

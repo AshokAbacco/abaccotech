@@ -23,7 +23,7 @@ export default function WebsiteDesignPage() {
         {/* <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-transparent"></div> */}
         <div className="relative z-10 animate-fade-in">
             <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
-                Premium <span className="text-green-500">Website Designing</span> Services
+                Premium  Website Designing  Services
             </h1>
 
             <p className="text-lg md:text-xl max-w-3xl mx-auto text-gray-300 leading-relaxed">
@@ -45,7 +45,7 @@ export default function WebsiteDesignPage() {
       <section className=" ">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-4xl md:text-5xl font-bold text-center mb-6">
-            What We <span className="text-green-500">Offer</span>
+            What We Offer
           </h2>
           <p className="text-center text-gray-400 mb-16 max-w-2xl mx-auto">
             Comprehensive web solutions tailored to your business needs

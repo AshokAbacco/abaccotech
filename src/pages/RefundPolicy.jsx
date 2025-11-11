@@ -279,7 +279,7 @@ export default function RefundPolicy() {
       </div>
 
       {/* Bottom wave divider */}
-      <div className="mt-2 bg-gradient-to-t from-black/40 to-transparent">
+      <div className="  bg-gradient-to-t from-black/40 to-transparent">
         <svg aria-hidden viewBox="0 0 1440 120" className="w-full opacity-40">
           <path
             fill="currentColor"

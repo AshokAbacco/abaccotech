@@ -35,7 +35,7 @@ export default function PremiumNavbar() {
   return (
     <header className="fixed top-0 left-0 w-full z-50 backdrop-blur-md bg-black/10 border-b border-white/10 shadow-lg">
       {/* Top Contact Bar */}
-      <div className="hidden md:flex justify-between items-center px-6 py-2 text-sm bg-gradient-to-r from-green-600 to-green-500 text-white">
+      {/* <div className="flex items-center justify-between px-6 md:px-10 py-5 border-b border-white/10">
         <div className="flex items-center gap-6 ml-5">
           <a href="mailto:info@abaccotech.com" className="flex items-center gap-2 hover:text-black/80 transition">
             <Mail size={15}/> info@abaccotech.com
@@ -52,7 +52,7 @@ export default function PremiumNavbar() {
             </a>
           ))}
         </div>
-      </div>
+      </div> */}
 
       {/* Main Navbar */}
       <div className="flex items-center justify-between px-6 md:px-10 py-5">
@@ -119,7 +119,7 @@ export default function PremiumNavbar() {
           </a>
 
 
-          <a href="/contact" className="bg-green-600 hover:bg-green-500 px-6 py-2 rounded-lg flex items-center gap-2 font-semibold transition">
+          <a href="/contact" className="hover:text-green-400 transition flex items-center gap-1">
             <Send size={18}/> Contact Us
           </a>
         </nav>
