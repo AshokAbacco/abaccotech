@@ -79,12 +79,16 @@ router.post("/verify-payment", async (req, res) => {
 
     // ✅ Email Setup
     const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.SMTP_EMAIL,
-        pass: process.env.SMTP_PASS,
-      },
-    });
+  host: "smtp.gmail.com",
+  port: 465,             // or 587 if 465 fails
+  secure: true,          // true for port 465, false for 587
+  auth: {
+    user: process.env.SMTP_EMAIL,
+    pass: process.env.SMTP_PASS, // must be an App Password
+  },
+  connectionTimeout: 10000, // optional shorter timeout (10s)
+});
+
 
     // ✅ Invoice Email
     await transporter.sendMail({

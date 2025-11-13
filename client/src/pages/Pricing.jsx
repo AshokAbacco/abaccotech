@@ -3,7 +3,7 @@ import { useState } from "react";
 import { CheckCircle, Globe, Mail, TrendingUp, RefreshCw } from "lucide-react";
 import { motion } from "framer-motion";
 import Layout from "../Components/Layout";
-
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 export default function Pricing() {
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
@@ -56,7 +56,7 @@ export default function Pricing() {
       return;
     }
 
-    const res = await fetch("http://localhost:5000/payment/create-order", {
+    const res = await fetch(`${API_BASE_URL}/payment/create-order`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -86,7 +86,7 @@ export default function Pricing() {
         contact: formData.phone,
       },
       handler: async function (response) {
-        await fetch("http://localhost:5000/payment/verify-payment", {
+        await fetch(`${API_BASE_URL}/payment/verify-payment`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(response),
