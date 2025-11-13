@@ -239,26 +239,31 @@ export default function Pricing() {
                   </div>
 
                   <button
-                  onClick={() => {
-                    const planPrice = Number(plan.price.replace(/\D/g, ""));
-                    const amount = planPrice * 100;
+                    onClick={() => {
+                      const planPrice = Number(plan.price.replace(/\D/g, ""));
+                      const amount = planPrice * 100;
 
-                    setFormData((prev) => ({
-                      ...prev,
-                      amount,
-                      plan: plan.title,
-                      planPrice,
-                    }));
+                      setFormData((prev) => ({
+                        ...prev,
+                        amount,
+                        plan: plan.title,
+                        planPrice,
+                      }));
 
-                    setTotalAmount(amount);
-                    setShowForm(true);
-                  }}
-
-
-                    className="block text-center font-semibold py-2 rounded-lg transition w-full cursor-pointer bg-green-600 hover:bg-green-500 text-white shadow-xl"
+                      setTotalAmount(amount);
+                      setShowForm(true);
+                    }}
+                    className={`block text-center font-semibold py-2 rounded-lg transition w-full cursor-pointer shadow-xl
+                      ${
+                        plan.title === "Professional"
+                          ? "bg-gray-800 hover:bg-gray-700 text-white"
+                          : "bg-green-600 hover:bg-green-500 text-white"
+                      }
+                    `}
                   >
                     Pay Now
                   </button>
+
                 </motion.div>
               ))}
             </div>
