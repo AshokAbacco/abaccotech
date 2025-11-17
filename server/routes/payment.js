@@ -185,20 +185,34 @@ router.post("/create-order", async (req, res) => {
   try {
     const { name, email, phone, amount, plan, planPrice, addOns } = req.body;
 
-    // Razorpay Order
+    // -------------------------------
+    // VALIDATION
+    // -------------------------------
+    if (!name || !email || !phone || !amount) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    // ⭐ amount is already in paise from frontend
+    const amountInPaise = parseInt(amount); // ← REMOVE ×100
+
+    // -------------------------------
+    // CREATE RAZORPAY ORDER
+    // -------------------------------
     const order = await razorpay.orders.create({
-      amount,
+      amount: amountInPaise,       // correct paise value
       currency: "INR",
       receipt: "rcpt_" + Date.now(),
     });
 
-    // Save to DB
+    // -------------------------------
+    // SAVE TO DATABASE
+    // -------------------------------
     await prisma.payment.create({
       data: {
         customerName: name,
         customerEmail: email,
         phoneNumber: phone,
-        amount,
+        amount: amountInPaise,
         orderId: order.id,
         status: "PENDING",
         plan,
@@ -207,12 +221,22 @@ router.post("/create-order", async (req, res) => {
       },
     });
 
-    res.json(order);
+    // -------------------------------
+    // SEND TO FRONTEND
+    // -------------------------------
+    res.json({
+      success: true,
+      orderId: order.id,
+      amount: amountInPaise,
+      currency: "INR",
+    });
+
   } catch (err) {
     console.error("Order Creation Error:", err);
     res.status(500).json({ error: "Order creation failed" });
   }
 });
+
 
 // --------------------------------------------
 // VERIFY PAYMENT + SEND INVOICE (RESEND)
@@ -246,63 +270,69 @@ router.post("/verify-payment", async (req, res) => {
     // --------------------------------------------
     try {
 
-      const addOnsList = payment.addOns ? JSON.parse(payment.addOns) : [];
+    const addOnsList = payment.addOns ? JSON.parse(payment.addOns) : [];
 
-      await resend.emails.send({
-        from: "Abacco Technology <noreply@abaccotech.com>",
-        to: payment.customerEmail,
-        cc: "info@abaccotech.com",
-        subject: "Abacco Technology — Payment Invoice",
+    await resend.emails.send({
+      from: "Abacco Technology <noreply@abaccotech.com>",
+      to: payment.customerEmail,              // Customer
+      cc: "info@abaccotech.com",              // Admin receives full client info
+      subject: "Abacco Technology — Payment Invoice",
 
-        html: `
-          <div style="font-family: Arial; padding:20px; border:1px solid #ddd; border-radius:10px; max-width:600px; margin:auto;">
-            <h2 style="color:#22c55e; text-align:center;">Payment Invoice</h2>
+      html: `
+        <div style="font-family: Arial; padding:20px; border:1px solid #ddd; border-radius:10px; max-width:600px; margin:auto;">
+          <h2 style="color:#22c55e; text-align:center;">Payment Invoice</h2>
 
-            <p>Hello <b>${payment.customerName}</b>,</p>
-            <p>Thank you for your payment. Below are your invoice details:</p>
+          <p>Hello <b>${payment.customerName}</b>,</p>
+          <p>Thank you for your payment. Below are your invoice details:</p>
 
-            <table style="width:100%; margin-top:20px; border-collapse:collapse;">
-              <tr><td><b>Customer Name:</b></td><td>${payment.customerName}</td></tr>
-              <tr><td><b>Email:</b></td><td>${payment.customerEmail}</td></tr>
-              <tr><td><b>Phone:</b></td><td>${payment.phoneNumber}</td></tr>
-              <tr><td><b>Selected Plan:</b></td><td>${payment.plan} — ₹${payment.planPrice}</td></tr>
+          <h3 style="margin-top:20px; color:#22c55e;">Customer Information</h3>
+          <table style="width:100%; margin-top:10px; border-collapse:collapse;">
+            <tr><td><b>Name:</b></td><td>${payment.customerName}</td></tr>
+            <tr><td><b>Email:</b></td><td>${payment.customerEmail}</td></tr>
+            <tr><td><b>Phone:</b></td><td>${payment.phoneNumber}</td></tr>
+          </table>
 
-              ${
-                addOnsList.length > 0
-                  ? `<tr>
-                      <td><b>Add-Ons:</b></td>
-                      <td>
-                        ${addOnsList.map(a => `${a.title} — ₹${a.price.replace(/\D/g, "")}`).join("<br>")}
-                      </td>
-                    </tr>`
-                  : ""
-              }
+          <h3 style="margin-top:20px; color:#22c55e;">Order Details</h3>
+          <table style="width:100%; margin-top:10px; border-collapse:collapse;">
+            <tr><td><b>Selected Plan:</b></td><td>${payment.plan} — ₹${payment.planPrice}</td></tr>
 
-              <tr><td><b>Total Amount Paid:</b></td><td>₹${payment.amount / 100}</td></tr>
-              <tr><td><b>Payment ID:</b></td><td>${payment.paymentId}</td></tr>
-              <tr><td><b>Date:</b></td><td>${new Date().toLocaleString()}</td></tr>
-            </table>
+            ${
+              addOnsList.length > 0
+                ? `<tr>
+                    <td><b>Add-Ons:</b></td>
+                    <td>${addOnsList
+                      .map(a => `${a.title} — ₹${a.price.replace(/\D/g, "")}`)
+                      .join("<br>")}
+                    </td>
+                  </tr>`
+                : ""
+            }
 
-            <p style="margin-top:20px; font-size:12px; text-align:center; color:#777;">
-              © ${new Date().getFullYear()} Abacco Technology — All Rights Reserved.
-            </p>
-          </div>
-        `,
-      });
+            <tr><td><b>Total Amount Paid:</b></td><td>₹${payment.amount / 100}</td></tr>
+            <tr><td><b>Payment ID:</b></td><td>${payment.paymentId}</td></tr>
+            <tr><td><b>Date:</b></td><td>${new Date().toLocaleString()}</td></tr>
+          </table>
 
-    } catch (emailErr) {
-      console.error("EMAIL SEND FAILED:", emailErr);
-    }
+          <p style="margin-top:25px; font-size:12px; text-align:center; color:#777;">
+            © ${new Date().getFullYear()} Abacco Technology — All Rights Reserved.
+          </p>
+        </div>
+      `,
+    });
 
-
-    // Final response
-    res.json({ success: true });
-
-  } catch (err) {
-    console.error("Verify Payment Error:", err);
-    res.status(500).json({ error: "Verification failed" });
+  } catch (emailErr) {
+    console.error("EMAIL SEND FAILED:", emailErr);
   }
-});
+
+
+      // Final response
+      res.json({ success: true });
+
+    } catch (err) {
+      console.error("Verify Payment Error:", err);
+      res.status(500).json({ error: "Verification failed" });
+    }
+  });
 
 
 export default router;

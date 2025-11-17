@@ -3,6 +3,7 @@ import { useState } from "react";
 import { CheckCircle, Globe, Mail, TrendingUp, RefreshCw } from "lucide-react";
 import { motion } from "framer-motion";
 import Layout from "../Components/Layout";
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function Pricing() {
@@ -11,10 +12,12 @@ export default function Pricing() {
     name: "",
     email: "",
     phone: "",
-    amount: 0,
+    plan: "",
+    planPrice: 0,
   });
+
   const [selectedAddOns, setSelectedAddOns] = useState([]);
-  const [totalAmount, setTotalAmount] = useState(0);
+  const [totalAmount, setTotalAmount] = useState(0); // always paise
 
   const handleInput = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -51,110 +54,112 @@ export default function Pricing() {
     { icon: RefreshCw, title: "Website Renewal Cost", price: "₹4,999/year", description: "Website management & updates" },
   ];
 
-const handleRazorpayCheckout = async () => {
-  if (!formData.name || !formData.email || !formData.phone) {
-    alert("Please fill all fields.");
-    return;
-  }
+  // -------------------------------
+  // PAYMENT CHECKOUT
+  // -------------------------------
+  const handleRazorpayCheckout = async () => {
+    if (!formData.name || !formData.email || !formData.phone) {
+      alert("Please fill all fields.");
+      return;
+    }
 
-  if (totalAmount <= 0) {
-    alert("Please select a valid plan.");
-    return;
-  }
+    if (totalAmount <= 0) {
+      alert("Please select a valid plan.");
+      return;
+    }
 
-  const res = await fetch(`${API_BASE_URL}/payment/create-order`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
+    // 1️⃣ CREATE ORDER
+    const res = await fetch(`${API_BASE_URL}/payment/create-order`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        amount: totalAmount,       // paise
+        plan: formData.plan,
+        planPrice: formData.planPrice,
+        addOns: selectedAddOns,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (!data.orderId) {
+      alert("❌ Order creation failed");
+      return;
+    }
+
+    // 2️⃣ RAZORPAY OPTIONS
+    const options = {
+      key: import.meta.env.VITE_RAZORPAY_KEY,
+      amount: data.amount,
+      currency: "INR",
+      order_id: data.orderId,   // ✔ FIXED
+
       name: formData.name,
-      email: formData.email,
-      phone: formData.phone,
-      amount: totalAmount,
-      plan: formData.plan,
-      planPrice: formData.planPrice,
-      addOns: selectedAddOns,
-    }),
-  });
+      description: "Website Package Payment",
 
-  const data = await res.json();
+      prefill: {
+        name: formData.name,
+        email: formData.email,
+        contact: formData.phone,
+      },
 
-  const options = {
-    key: import.meta.env.VITE_RAZORPAY_KEY,
-    order_id: data.id,
-    amount: data.amount,
-    currency: "INR",
-    name: formData.name,
-    description: "Website Package Payment",
-    prefill: {
-      name: formData.name,
-      email: formData.email,
-      contact: formData.phone,
-    },
-    handler: async function (response) {
-      await fetch(`${API_BASE_URL}/payment/verify-payment`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          razorpay_payment_id: response.razorpay_payment_id,
-          razorpay_order_id: response.razorpay_order_id,
-          razorpay_signature: response.razorpay_signature,
-        }),
-      });
+      handler: async function (response) {
+        if (
+          !response.razorpay_payment_id ||
+          !response.razorpay_order_id ||
+          !response.razorpay_signature
+        ) {
+          alert("❌ Payment failed or cancelled.");
+          return;
+        }
 
-      alert("✅ Payment Successful — Invoice sent to your email!");
-      setShowForm(false);
-    },
-    theme: { color: "#22c55e" },
+        const verifyRes = await fetch(`${API_BASE_URL}/payment/verify-payment`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(response),
+        });
+
+        if (!verifyRes.ok) {
+          alert("❌ Payment verification failed.");
+          return;
+        }
+
+        alert("✅ Payment Successful — Invoice sent to your email!");
+        setShowForm(false);
+      },
+
+      theme: { color: "#22c55e" },
+    };
+
+    // 3️⃣ OPEN CHECKOUT
+    new window.Razorpay(options).open();
   };
-  if (totalAmount <= 0) {
-  alert("Please select a valid plan.");
-  return;
-}
-
-
-  new window.Razorpay(options).open();
-};
 
   return (
     <Layout>
+      {/* POPUP FORM */}
       {showForm && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white w-[95%] max-w-md px-8 py-7 rounded-[20px] shadow-2xl border border-gray-200 animate-scaleIn">
             
-            {/* Title */}
-            <h2 className="text-2xl font-bold text-center text-gray-900">
-              Enter Your Details
-            </h2>
-            <p className="text-center text-gray-500 text-sm mb-6">
-              Please fill in your information to continue the payment
-            </p>
+            <h2 className="text-2xl font-bold text-center text-gray-900">Enter Your Details</h2>
+            <p className="text-center text-gray-500 text-sm mb-6">Please fill in your information to continue the payment</p>
 
-            {/* Inputs */}
             <div className="space-y-4">
-              <input
-                type="text"
-                name="name"
-                placeholder="Full Name"
-                onChange={handleInput}
-                className="w-full p-3 bg-gray-100 text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition"
-              />
+              <input type="text" name="name" placeholder="Full Name" onChange={handleInput}
+                className="w-full p-3 bg-gray-100 text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition" />
 
-              <input
-                type="email"
-                name="email"
-                placeholder="Email Address"
-                onChange={handleInput}
-                className="w-full p-3 bg-gray-100 text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition"
-              />
+              <input type="email" name="email" placeholder="Email Address" onChange={handleInput}
+                className="w-full p-3 bg-gray-100 text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition" />
 
-              <input
-                type="tel"
-                name="phone"
-                placeholder="Phone Number"
-                onChange={handleInput}
-                className="w-full p-3 bg-gray-100 text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition"
-              />
+              <input type="tel" name="phone" placeholder="Phone Number" onChange={handleInput}
+                className="w-full p-3 bg-gray-100 text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition" />
             </div>
+
+            {/* ADD-ONS */}
             <div className="mt-6">
               <h3 className="font-semibold text-gray-800 mb-2">Add-On Services (Optional)</h3>
 
@@ -162,40 +167,29 @@ const handleRazorpayCheckout = async () => {
                 <label key={i} className="flex items-center gap-2 mb-2 text-gray-700">
                   <input
                     type="checkbox"
-                   onChange={(e) => {
+                    onChange={(e) => {
                       let list = [...selectedAddOns];
 
                       if (e.target.checked) {
-                        // ✅ Only add if not already in list
-                        if (!list.find(item => item.title === add.title)) {
-                          list.push({
-                            title: add.title,
-                            price: add.price
-                          });
-                          setTotalAmount(prev => prev + Number(add.price.replace(/\D/g, "")) * 100);
+                        if (!list.find((item) => item.title === add.title)) {
+                          list.push({ title: add.title, price: add.price });
+                          setTotalAmount((prev) => prev + Number(add.price.replace(/\D/g, "")) * 100);
                         }
                       } else {
-                        // ✅ Properly remove if unchecked
-                        list = list.filter(item => item.title !== add.title);
-                        setTotalAmount(prev => prev - Number(add.price.replace(/\D/g, "")) * 100);
+                        list = list.filter((item) => item.title !== add.title);
+                        setTotalAmount((prev) => prev - Number(add.price.replace(/\D/g, "")) * 100);
                       }
 
                       setSelectedAddOns(list);
-                      setFormData(prev => ({ ...prev, addOns: list }));
                     }}
-
                   />
                   {add.title} — {add.price}
                 </label>
               ))}
 
-              <p className="font-bold mt-3 text-lg text-gray-900">
-                Total: ₹{totalAmount / 100}
-              </p>
+              <p className="font-bold mt-3 text-lg text-gray-900">Total: ₹{totalAmount / 100}</p>
             </div>
 
-
-            {/* Proceed Button */}
             <button
               className="w-full mt-6 bg-green-600 hover:bg-green-500 text-white cursor-pointer py-3 rounded-lg font-semibold transition shadow-md hover:shadow-lg"
               onClick={handleRazorpayCheckout}
@@ -203,9 +197,8 @@ const handleRazorpayCheckout = async () => {
               Proceed to Pay
             </button>
 
-            {/* Cancel Button */}
             <button
-              className="w-full mt-3 py-3 rounded-lg bg-gray-200 text-gray-700 font-medium hover:bg-gray-300 transition cursor-pointer "
+              className="w-full mt-3 py-3 rounded-lg bg-gray-200 text-gray-700 font-medium hover:bg-gray-300 transition cursor-pointer"
               onClick={() => setShowForm(false)}
             >
               Cancel
@@ -214,16 +207,12 @@ const handleRazorpayCheckout = async () => {
         </div>
       )}
 
-
+      {/* MAIN PRICING PAGE (NO CHANGES MADE) */}
       <div className="min-h-screen text-white pt-32 pb-20">
         <div className="container mx-auto px-6">
           <div className="text-center mb-20">
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="text-4xl md:text-5xl font-bold mb-4"
-            >
+            <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
+              className="text-4xl md:text-5xl font-bold mb-4">
               Simple & Transparent Pricing
             </motion.h1>
 
@@ -259,36 +248,30 @@ const handleRazorpayCheckout = async () => {
 
                       setFormData((prev) => ({
                         ...prev,
-                        amount,
                         plan: plan.title,
                         planPrice,
                       }));
 
+                      setSelectedAddOns([]);
                       setTotalAmount(amount);
                       setShowForm(true);
                     }}
                     className={`block text-center font-semibold py-2 rounded-lg transition w-full cursor-pointer shadow-xl
-                      ${
-                        plan.title === "Professional"
-                          ? "bg-gray-800 hover:bg-gray-700 text-white"
-                          : "bg-green-600 hover:bg-green-500 text-white"
-                      }
-                    `}
+                    ${plan.title === "Professional"
+                      ? "bg-gray-800 hover:bg-gray-700 text-white"
+                      : "bg-green-600 hover:bg-green-500 text-white"
+                    }`}
                   >
                     Pay Now
                   </button>
-
                 </motion.div>
               ))}
             </div>
           </div>
 
           <div className="text-center">
-            <motion.h2
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              className="text-3xl md:text-4xl font-bold mb-4"
-            >
+            <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
+              className="text-3xl md:text-4xl font-bold mb-4">
               Optional Add-Ons
             </motion.h2>
 
@@ -318,6 +301,7 @@ const handleRazorpayCheckout = async () => {
                 );
               })}
             </div>
+
           </div>
         </div>
       </div>
