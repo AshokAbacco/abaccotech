@@ -2,7 +2,10 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import path from "path";
 import paymentRoute from "./routes/payment.js";
+import vendorRoute from "./routes/vendor.js";
+import authRoute from "./routes/auth.js";
 
 dotenv.config();
 
@@ -41,50 +44,24 @@ app.use(
 // Parse JSON
 app.use(express.json());
 
+// 🖼️ Serve uploaded vendor files (images/pdfs/docs) statically
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
+
 // 🟢 Test Route
 app.get("/", (req, res) => {
   res.send("✅ Backend Running — CORS Working!");
 });
 
+// 🟢 Auth Routes (register / login / me)
+app.use("/auth", authRoute);
+
 // 🟢 Payment Routes
 app.use("/payment", paymentRoute);
+
+// 🟢 Vendor Routes
+app.use("/vendor", vendorRoute);
 
 // 🟢 Start Server
 app.listen(5000, () => {
   console.log("🚀 Backend running on http://localhost:5000");
 });
-
-
-
-
-// // server.js
-// import express from "express";
-// import cors from "cors";
-// import dotenv from "dotenv";
-// import paymentRoute from "./routes/payment.js";
-
-// dotenv.config();
-
-// const app = express();
-
-// app.use(cors({
-//   origin: "http://localhost:5173",
-//   methods: ["GET", "POST"],
-//   allowedHeaders: ["Content-Type"]
-// }));
-
-// app.use(express.json());
-
-// // ✅ Test Route
-// app.get("/", (req, res) => {
-//   res.send("✅ Razorpay + Prisma Backend Running");
-// });
-
-// // ✅ Payment Routes
-// app.use("/payment", paymentRoute);
-
-// // ✅ Start Server
-// app.listen(5000, () => {
-//   console.log("✅ Backend running on http://localhost:5000");
-// });
-

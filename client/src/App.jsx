@@ -18,6 +18,18 @@ import RefundPolicy from "./pages/RefundPolicy";
 import TermsService from "./pages/TermsService";
 import PrivacyPolicy from "./pages/PrivacyPolicy"
 import Success from "./Components/Success"
+import Vendors from "./pages/dashboard/Vendors";
+import { LogIn } from "lucide-react";
+import Login from "./pages/auth/Login";
+import Register from "./pages/auth/Register";
+
+
+import Dashboard from "./pages/dashboard/Dashboard";
+import VendorsList from "./pages/dashboard/VendorsList";
+import Admin from "./pages/dashboard/admin/Admin"
+import UserDetails from "./pages/dashboard/admin/UserDetails"
+
+
 function App() {
   return (
     <BrowserRouter>
@@ -41,6 +53,16 @@ function App() {
         <Route path="/terms" element={<TermsService />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/success" element={<Success />} />
+       
+        <Route path="/sign-in" element={<Login />} />
+        <Route path="/sign-up" element={<Register />} />
+
+        {/* Dashbaord */}
+         <Route path="/dashboard" element={<Dashboard />} />
+         <Route path="/vendors" element={<Vendors />} />
+         <Route path="/vendors-list" element={<VendorsList />} />
+         <Route path="/admin" element={<Admin />} />
+        <Route path="/admin/users/:id" element={<UserDetails />} />
 
       </Routes>
     </BrowserRouter>

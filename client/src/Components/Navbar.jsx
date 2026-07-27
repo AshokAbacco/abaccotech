@@ -3,10 +3,11 @@ import { Mail, Phone, Menu, X, Home, Info, Briefcase, MessageSquare, ChevronDown
 import {
   Monitor,
   Workflow,
-  Smartphone,
+  Smartphone, 
   CloudCog,
   Database,
-  Cloud
+  Cloud,
+  User
 } from "lucide-react";
 import { GiReceiveMoney } from "react-icons/gi";
 import { FaRegHandshake } from "react-icons/fa6";
@@ -117,18 +118,22 @@ export default function PremiumNavbar() {
           <a href="/pricing" className="hover:text-green-400 transition flex items-center gap-1">
             <GiReceiveMoney size={18}/> Pricing
           </a>
-
-
           <a href="/contact" className="hover:text-green-400 transition flex items-center gap-1">
             <Send size={18}/> Contact Us
           </a>
+          <a href="/sign-in" className="hover:text-green-400 transition flex items-center gap-1">
+           <User size={18}/>  Sign In
+          </a>
         </nav>
+
 
         {/* Mobile Menu Icon */}
         <button onClick={() => setMobileMenu(!mobileMenu)} className="lg:hidden text-white">
           {mobileMenu ? <X size={26}/> : <Menu size={26}/>}
         </button>
       </div>
+
+
 
       {/* Mobile Drawer */}
       {mobileMenu && (
@@ -175,4 +180,4 @@ export default function PremiumNavbar() {
       )}
     </header>
   );
-}
+}   
