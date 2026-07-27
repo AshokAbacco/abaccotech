@@ -60,6 +60,7 @@ model Vendor {
 
   status    String       @default("PENDING") // PENDING | APPROVED | REJECTED
   files     VendorFile[]
+  referrals Referral[] // 🆕 users referred by this vendor via their referral code
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
 }
@@ -76,4 +77,26 @@ model VendorFile {
   fileSize  Int? // size in bytes
   docType   String   @default("OTHER") // AADHAAR | PAN | BANK_PROOF | OTHER
   createdAt DateTime @default(now())
+}
+
+// 🆕 Referral — a user who signed up on an external site (Bounce Cure, School CRM, etc.)
+// using a vendor's referral code. Abacco Tech is the system of record for these leads.
+model Referral {
+  id           Int      @id @default(autoincrement())
+  vendor       Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  vendorId     Int
+  referralCode String // snapshot of the code used at signup time (User.referralCode)
+  website      String // which external site the referral came from, e.g. "Bounce Cure"
+  userName     String
+  email        String?
+  phone        String
+  plan         String? // plan the referred user signed up for, if any
+  status       String   @default("TRIAL") // TRIAL | ACTIVE | PAID | CANCELLED
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // 🔒 Same phone can't be referred twice for the same website
+  @@unique([website, phone])
+  @@index([vendorId])
+  @@index([referralCode])
 }

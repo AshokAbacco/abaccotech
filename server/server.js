@@ -6,6 +6,7 @@ import path from "path";
 import paymentRoute from "./routes/payment.js";
 import vendorRoute from "./routes/vendor.js";
 import authRoute from "./routes/auth.js";
+import referralRoutes from "./routes/referral.js";
 
 dotenv.config();
 
@@ -61,7 +62,8 @@ app.use("/payment", paymentRoute);
 // 🟢 Vendor Routes
 app.use("/vendor", vendorRoute);
 
+app.use("/referral", referralRoutes);
 // 🟢 Start Server
-app.listen(5000, () => {
-  console.log("🚀 Backend running on http://localhost:5000");
+app.listen(5001, () => {
+  console.log("🚀 Backend running on http://localhost:5001");
 });

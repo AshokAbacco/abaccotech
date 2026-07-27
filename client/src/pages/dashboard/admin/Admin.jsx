@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Eye, Trash2, Users, Loader2, ShieldAlert } from "lucide-react";
 import DashboardLayout from "../../../Components/DashboardLayout";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const API_URL = import.meta.env.VITE_API_URL ;
 
 export default function Admin() {
   const navigate = useNavigate();
