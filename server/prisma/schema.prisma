@@ -7,6 +7,21 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// 🟢 Users (auth)
+model User {
+  id           Int      @id @default(autoincrement())
+  username     String
+  email        String   @unique
+  phone        String?
+  password     String // hashed with bcrypt, never store plain text
+  role         String   @default("user") // "user" | "admin"  -> default is ALWAYS "user"
+  referralCode String?  @unique // auto-generated after creation, e.g. "ABARC001"
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  vendor Vendor? // the vendor/KYC details this user has submitted, if any
+}
+
 model Payment {
   id            Int      @id @default(autoincrement())
   orderId       String   @unique
@@ -21,4 +36,44 @@ model Payment {
   planPrice     Int? // ✅ store plan base price
   addOns        String? // ✅ store JSON array of add-ons
   createdAt     DateTime @default(now())
+}
+
+// 🟢 Vendor Registration
+model Vendor {
+  id         Int     @id @default(autoincrement())
+  user       User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId     Int?    @unique // links this vendor submission to the logged-in user who submitted it
+  fullName   String
+  phone      String
+  email      String
+  websiteUrl String? // optional company/website url
+
+  // 🪪 Identity Details (KYC)
+  aadhaarNumber String? // 12-digit Aadhaar number
+  panNumber     String? // 10-character PAN (e.g. ABCDE1234F)
+
+  // 🏦 Bank Details
+  bankAccountNumber String?
+  bankName          String?
+  ifscCode          String?
+  branchName        String?
+
+  status    String       @default("PENDING") // PENDING | APPROVED | REJECTED
+  files     VendorFile[]
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+}
+
+// 🟢 Files uploaded by a Vendor (supports single or multiple uploads)
+// docType lets us tag what each uploaded file is (Aadhaar copy, PAN copy, other document, etc.)
+model VendorFile {
+  id        Int      @id @default(autoincrement())
+  vendor    Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  vendorId  Int
+  fileName  String // original file name
+  filePath  String // path/url where file is stored
+  fileType  String? // mimetype, e.g. application/pdf, image/png
+  fileSize  Int? // size in bytes
+  docType   String   @default("OTHER") // AADHAAR | PAN | BANK_PROOF | OTHER
+  createdAt DateTime @default(now())
 }
