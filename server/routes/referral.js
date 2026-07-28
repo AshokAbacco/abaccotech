@@ -1,8 +1,9 @@
 // routes/referral.js
 import express from "express";
 import * as referralController from "../controllers/referralController.js";
-import { protect } from "../middleware/authMiddleware.js";
-
+// import { protect } from "../middleware/authMiddleware.js";
+import { runBounceCureSync } from "../controllers/referralSyncController.js";
+import { protect, requireAdmin } from "../middleware/authMiddleware.js";
 const router = express.Router();
 
 // 🟢 Called by external projects (Bounce Cure, School CRM, etc.) when a user
@@ -22,5 +23,7 @@ router.get("/stats/:vendorId", referralController.getVendorStats);
 
 // 🟢 Combined payload for the Vendor Details page: vendor info + stats + referrals
 router.get("/details/:vendorId", referralController.getVendorDetails);
+
+router.post("/sync/bounce-cure", protect, requireAdmin, runBounceCureSync);
 
 export default router;

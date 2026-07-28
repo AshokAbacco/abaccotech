@@ -7,6 +7,7 @@ import paymentRoute from "./routes/payment.js";
 import vendorRoute from "./routes/vendor.js";
 import authRoute from "./routes/auth.js";
 import referralRoutes from "./routes/referral.js";
+import { startBounceCureSyncCron } from "./cron/bounceCureSyncCron.js";
 
 dotenv.config();
 
@@ -64,6 +65,9 @@ app.use("/vendor", vendorRoute);
 
 app.use("/referral", referralRoutes);
 // 🟢 Start Server
+
+startBounceCureSyncCron();
+
 app.listen(5001, () => {
   console.log("🚀 Backend running on http://localhost:5001");
 });
