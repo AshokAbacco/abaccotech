@@ -37,6 +37,9 @@ export default function VendorsList() {
   const [error, setError] = useState(null); // "no_vendor" | "error" | null
 
   useEffect(() => {
+    // Everything here is stored data — Bounce Cure referrals land in this
+    // same table via the backend's scheduled sync job, so this page doesn't
+    // need to know anything about Bounce Cure directly.
     const fetchMyReferrals = async () => {
       try {
         setLoading(true);
@@ -53,7 +56,6 @@ export default function VendorsList() {
         const data = await res.json();
 
         if (res.status === 404) {
-          // No vendor/KYC record yet — not a real error, just an empty state
           setError("no_vendor");
           return;
         }
@@ -75,7 +77,6 @@ export default function VendorsList() {
     fetchMyReferrals();
   }, []);
 
-  // 🟢 Group referrals by the external website they came from
   const websiteGroups = Object.values(
     referrals.reduce((acc, r) => {
       if (!acc[r.website]) {
@@ -92,12 +93,10 @@ export default function VendorsList() {
   return (
     <DashboardLayout>
       <div className="min-h-screen text-white py-10 px-2 relative overflow-hidden">
-        {/* Background glow accents matching site theme */}
         <div className="absolute top-10 left-10 w-72 h-72 bg-green-600/10 rounded-full blur-3xl pointer-events-none"></div>
         <div className="absolute bottom-10 right-10 w-96 h-96 bg-green-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
         <div className="relative z-10">
-          {/* Header row */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-10">
             <div>
               <h1 className="text-3xl font-bold text-white">Vendors</h1>
@@ -108,7 +107,6 @@ export default function VendorsList() {
 
             <div className="flex flex-col sm:flex-row sm:items-center gap-4">
               <ReferralCodeBadge />
-
               <Link
                 to="/vendors"
                 className="inline-flex items-center gap-2 bg-gradient-to-r from-green-500 to-green-600 px-6 py-3 rounded-full font-semibold text-sm hover:shadow-2xl hover:shadow-green-500/40 transition-all duration-300 hover:scale-105 self-start sm:self-auto"
@@ -119,7 +117,6 @@ export default function VendorsList() {
             </div>
           </div>
 
-          {/* Loading state */}
           {loading && (
             <div className="flex items-center justify-center gap-2 text-gray-400 py-20">
               <Loader2 className="w-5 h-5 animate-spin" />
@@ -127,7 +124,6 @@ export default function VendorsList() {
             </div>
           )}
 
-          {/* No vendor profile yet */}
           {!loading && error === "no_vendor" && (
             <div className="border border-gray-800 bg-gray-900/50 rounded-2xl p-10 text-center">
               <Building2 className="w-10 h-10 text-green-500 mx-auto mb-4" />
@@ -148,7 +144,6 @@ export default function VendorsList() {
             </div>
           )}
 
-          {/* Generic error state */}
           {!loading && error === "error" && (
             <div className="flex items-center gap-3 border border-red-500/20 bg-red-500/10 text-red-300 rounded-2xl p-6">
               <AlertCircle className="w-5 h-5 shrink-0" />
@@ -156,10 +151,8 @@ export default function VendorsList() {
             </div>
           )}
 
-          {/* Real data */}
           {!loading && !error && (
             <>
-              {/* Stats strip */}
               {stats && (
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-10">
                   {[
@@ -179,14 +172,12 @@ export default function VendorsList() {
                 </div>
               )}
 
-              {/* Empty state when vendor exists but has zero referrals */}
               {referrals.length === 0 && (
                 <div className="border border-gray-800 bg-gray-900/50 rounded-2xl p-10 text-center text-gray-400">
                   No referrals yet. Share your referral code to get started.
                 </div>
               )}
 
-              {/* Referral Website cards */}
               {websiteGroups.length > 0 && (
                 <>
                   <h2 className="text-lg font-semibold text-white mb-4">
@@ -226,7 +217,6 @@ export default function VendorsList() {
                 </>
               )}
 
-              {/* Individual referred clients */}
               {referrals.length > 0 && (
                 <>
                   <h2 className="text-lg font-semibold text-white mb-4">
