@@ -4,7 +4,7 @@ import { findVendorByReferralCode } from "./referralService.js";
 
 const prisma = new PrismaClient();
 
-const BOUNCE_CURE_API_BASE = process.env.BOUNCE_CURE_API_BASE_URL; // e.g. http://localhost:5000 (backend-only, never a VITE_ var)
+const BOUNCE_CURE_API_BASE = process.env.BOUNCE_CURE_API_BASE_URL; // e.g. https://bounce-cure.onrender.com (backend-only, never a VITE_ var)
 const BOUNCE_CURE_SYNC_KEY = process.env.BOUNCE_CURE_SYNC_API_KEY; // must match ABACCO_SYNC_API_KEY on Bounce Cure's side
 const WEBSITE_LABEL = "Bounce Cure";
 
@@ -33,8 +33,6 @@ const setLastSyncedAt = async (isoString) => {
 
 // 🟢 Pulls users from Bounce Cure who signed up using an Abacco Tech referral
 // code, resolves each code to a vendor, and upserts into our Referral table.
-// Safe to run repeatedly — matching rows are updated in place, never
-// duplicated (keyed on externalId, since Bounce Cure has no phone field).
 export const syncBounceCureReferrals = async () => {
   if (!BOUNCE_CURE_API_BASE || !BOUNCE_CURE_SYNC_KEY) {
     throw new SyncError(
@@ -47,12 +45,38 @@ export const syncBounceCureReferrals = async () => {
   const url = new URL("/api/internal/referrals/export", BOUNCE_CURE_API_BASE);
   if (since) url.searchParams.set("since", since);
 
+  console.log(`🔗 Bounce Cure sync requesting: ${url.toString()}`);
+
   const response = await fetch(url, {
-    headers: { "x-internal-api-key": BOUNCE_CURE_SYNC_KEY },
+    headers: {
+      "x-internal-api-key": BOUNCE_CURE_SYNC_KEY,
+      "User-Agent": "AbaccoTech-Sync/1.0", // some WAFs/CDNs block requests with no/default User-Agent
+    },
   });
 
   if (!response.ok) {
-    throw new SyncError(`Bounce Cure export request failed (${response.status})`, 502);
+    // 🔎 Read whatever the upstream actually sent back — this is the key
+    // diagnostic. A Cloudflare/Render block usually returns an HTML page or
+    // a distinctive short message here, very different from a JSON 429 your
+    // own Express code would produce. Also surface Retry-After if present.
+    const retryAfter = response.headers.get("retry-after");
+    let bodyPreview = "";
+    try {
+      bodyPreview = (await response.text()).slice(0, 500);
+    } catch {
+      bodyPreview = "(could not read response body)";
+    }
+
+    console.error(
+      `❌ Bounce Cure export failed — status ${response.status}${
+        retryAfter ? `, retry-after: ${retryAfter}` : ""
+      }\nResponse body preview:\n${bodyPreview}`
+    );
+
+    throw new SyncError(
+      `Bounce Cure export request failed (${response.status})`,
+      502
+    );
   }
 
   const { users = [] } = await response.json();
@@ -78,11 +102,8 @@ export const syncBounceCureReferrals = async () => {
       continue;
     }
 
-    // Bounce Cure has no phone field — leave it null for these rows.
-    const phone = null;
+    const phone = null; // Bounce Cure's User model has no phone field
 
-    // Bounce Cure DOES have firstName/lastName — use them; fall back to the
-    // email's local part only if both are missing.
     const fullName = [remoteUser.firstName, remoteUser.lastName].filter(Boolean).join(" ").trim();
     const userName = fullName || (remoteUser.email ? remoteUser.email.split("@")[0] : "Unknown");
 
