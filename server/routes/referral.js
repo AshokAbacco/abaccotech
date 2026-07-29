@@ -1,9 +1,8 @@
 // routes/referral.js
 import express from "express";
 import * as referralController from "../controllers/referralController.js";
-// import { protect } from "../middleware/authMiddleware.js";
-import { runBounceCureSync } from "../controllers/referralSyncController.js";
-import { protect, requireAdmin } from "../middleware/authMiddleware.js";
+import { protect } from "../middleware/authMiddleware.js";
+
 const router = express.Router();
 
 // 🟢 Called by external projects (Bounce Cure, School CRM, etc.) when a user
@@ -24,6 +23,14 @@ router.get("/stats/:vendorId", referralController.getVendorStats);
 // 🟢 Combined payload for the Vendor Details page: vendor info + stats + referrals
 router.get("/details/:vendorId", referralController.getVendorDetails);
 
-router.post("/sync/bounce-cure", protect, requireAdmin, runBounceCureSync);
+// 🗑️ REMOVED: POST /referral/sync/bounce-cure and its runBounceCureSync
+// import. Both Bounce Cure and School CRM push referrals directly to
+// /register now (see conversation history) — this pull-based manual sync
+// trigger and its underlying cron job are leftover from the earlier design
+// and were left running against endpoints/env vars that may no longer
+// exist, producing silent errors every 15 minutes for nothing. Safe to
+// delete services/referralSyncService.js, controllers/referralSyncController.js,
+// and cron/bounceCureSyncCron.js entirely if you don't want to keep them
+// around as a manual fallback option.
 
 export default router;

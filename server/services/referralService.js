@@ -3,7 +3,6 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-// 🟢 Custom error helper so the controller can map these to the right HTTP status
 class ReferralError extends Error {
   constructor(message, statusCode) {
     super(message);
@@ -11,8 +10,9 @@ class ReferralError extends Error {
   }
 }
 
-// 🟢 A vendor's referral code actually lives on their User record (User.referralCode),
-// not on the Vendor row itself — so resolving a code means: find the User, then their Vendor.
+// 🟢 A vendor's referral code lives on their User record (User.referralCode),
+// not on the Vendor row itself — resolving a code means: find the User, then
+// their Vendor.
 export const findVendorByReferralCode = async (referralCode) => {
   const user = await prisma.user.findUnique({
     where: { referralCode },
@@ -26,7 +26,26 @@ export const findVendorByReferralCode = async (referralCode) => {
   return user.vendor;
 };
 
-// 🟢 POST /referral/register — called by external projects (Bounce Cure, School CRM, etc.)
+// 🟢 POST /referral/register — called directly by external projects (Bounce
+// Cure, School CRM, etc.) the moment someone signs up / checks out using a
+// vendor's referral code. Public/unauthenticated by design — the caller is
+// another server, not a logged-in Abacco Tech user.
+//
+// 🔄 Changed from "reject on duplicate" to "update on repeat call":
+//   - FIXED BUG: the old dedup check used `{ website, phone }`, which broke
+//     for any source with no phone number (like Bounce Cure) — every null-
+//     phone row matched every other null-phone row, so the SECOND Bounce
+//     Cure referral would always be wrongly rejected as a duplicate of the
+//     first one.
+//   - NEW: dedup prefers phone when present, falls back to email when it
+//     isn't, so every source works correctly regardless of what fields it
+//     actually has.
+//   - NEW: instead of throwing a 409 on a repeat call for the same person,
+//     this now UPDATES their existing row (status, plan, etc.). That's
+//     important for the push model: a site can call this once at signup
+//     (status starts TRIAL) and call it again later when payment succeeds
+//     (status flips to PAID) — same endpoint, no separate "update" route
+//     needed.
 export const registerReferral = async ({
   referralCode,
   website,
@@ -34,36 +53,44 @@ export const registerReferral = async ({
   email,
   phone,
   plan,
+  status, // optional — defaults to "TRIAL" on first insert if not provided
 }) => {
   const vendor = await findVendorByReferralCode(referralCode);
   if (!vendor) {
     throw new ReferralError("Invalid Referral Code", 404);
   }
 
-  // 🔒 Prevent duplicate referrals using the same phone number for the same website
-  const duplicate = await prisma.referral.findFirst({
-    where: { website, phone },
-  });
-  if (duplicate) {
-    throw new ReferralError(
-      "This phone number has already been referred for this website.",
-      409
-    );
+  // Build a dedup filter from whatever identifying info we actually have.
+  // Prefer phone (more stable per-person identifier when present), fall
+  // back to email. If somehow neither is present, skip dedup entirely
+  // rather than matching everything with a null-vs-null comparison.
+  const dedupFilters = [];
+  if (phone) dedupFilters.push({ website, phone });
+  if (email) dedupFilters.push({ website, email });
+
+  const existing =
+    dedupFilters.length > 0
+      ? await prisma.referral.findFirst({ where: { OR: dedupFilters } })
+      : null;
+
+  const data = {
+    vendorId: vendor.id,
+    referralCode,
+    website,
+    userName,
+    email: email || null,
+    phone: phone || null,
+    plan: plan || null,
+    ...(status && { status }), // only overwrite status if the caller actually sent one
+  };
+
+  if (existing) {
+    return prisma.referral.update({ where: { id: existing.id }, data });
   }
 
-  const referral = await prisma.referral.create({
-    data: {
-      vendorId: vendor.id,
-      referralCode,
-      website,
-      userName,
-      email: email || null,
-      phone,
-      plan: plan || null,
-    },
+  return prisma.referral.create({
+    data: { ...data, status: status || "TRIAL" },
   });
-
-  return referral;
 };
 
 // 🟢 GET /referral/vendor/:vendorId — all referrals for a vendor, newest first
@@ -112,8 +139,6 @@ export const getVendorDetails = async (vendorId) => {
     throw new ReferralError("Vendor not found", 404);
   }
 
-  // vendor is guaranteed to exist here, so we can fetch stats/referrals directly
-  // instead of going through the vendor-existence check twice.
   const [totalReferrals, activeUsers, paidUsers, trialUsers, referrals] = await Promise.all([
     prisma.referral.count({ where: { vendorId } }),
     prisma.referral.count({ where: { vendorId, status: "ACTIVE" } }),
@@ -130,8 +155,6 @@ export const getVendorDetails = async (vendorId) => {
 };
 
 // 🆕 GET /referral/me — powers VendorsList.jsx for the logged-in vendor.
-// The frontend only has a JWT (req.user.userId), not a vendorId, so we resolve
-// user -> vendor here instead of making the client guess/store the vendor id.
 export const getVendorDetailsByUserId = async (userId) => {
   const user = await prisma.user.findUnique({
     where: { id: userId },
@@ -139,7 +162,6 @@ export const getVendorDetailsByUserId = async (userId) => {
   });
 
   if (!user || !user.vendor) {
-    // Not a hard error for the frontend — just means "no KYC submitted yet"
     throw new ReferralError("No vendor profile found for this account.", 404);
   }
 

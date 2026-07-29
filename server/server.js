@@ -7,7 +7,12 @@ import paymentRoute from "./routes/payment.js";
 import vendorRoute from "./routes/vendor.js";
 import authRoute from "./routes/auth.js";
 import referralRoutes from "./routes/referral.js";
-import { startBounceCureSyncCron } from "./cron/bounceCureSyncCron.js";
+import schoolSyncRoutes from "./routes/schoolSync.routes.js"; // 🆕 pull-based referral sync (manual trigger)
+import { startSchoolSyncCron } from "./cron/schoolSyncCron.js"; // 🆕 automatic referral sync every 5 minutes
+// 🗑️ REMOVED: import { startBounceCureSyncCron } from "./cron/bounceCureSyncCron.js";
+// Both Bounce Cure and School CRM push referrals directly now — this cron
+// job was pulling from an endpoint/env-var setup that's no longer part of
+// the design, and would silently fail every 15 minutes if left running.
 
 dotenv.config();
 
@@ -47,6 +52,15 @@ app.use(
 app.use(express.json());
 
 // 🖼️ Serve uploaded vendor files (images/pdfs/docs) statically
+//
+// ⚠️ Worth knowing: this makes anything in /uploads directly fetchable by
+// URL if someone has (or guesses) the exact filename — including the
+// Aadhaar/PAN files vendors upload. Filenames include a timestamp + random
+// suffix, so they're not easily guessable, but they WERE being handed out
+// by the two unprotected vendor endpoints fixed in vendor.js. Now that those
+// require admin auth, this is much less of a concern, but consider an
+// auth-gated download route instead of static serving if these documents
+// need to stay fully private long-term.
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 // 🟢 Test Route
@@ -64,10 +78,19 @@ app.use("/payment", paymentRoute);
 app.use("/vendor", vendorRoute);
 
 app.use("/referral", referralRoutes);
+
+// 🆕 School CRM referral sync — pull-based replacement for the old
+// push-based /referral/register calls. POST /sync/school-crm/run
+// (admin-only) still works for an on-demand/manual trigger.
+app.use("/sync/school-crm", schoolSyncRoutes);
+
+// 🆕 Automatic referral sync — runs the same syncSchoolCrmReferrals logic
+// on a schedule (every 5 minutes) so nobody has to call
+// POST /sync/school-crm/run by hand. One failed run just logs and waits
+// for the next tick; it never crashes the server or cancels future runs.
+startSchoolSyncCron();
+
 // 🟢 Start Server
-
-startBounceCureSyncCron();
-
 app.listen(5001, () => {
   console.log("🚀 Backend running on http://localhost:5001");
 });
