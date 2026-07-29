@@ -99,7 +99,7 @@ export default function VendorsList() {
         <div className="relative z-10">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-10">
             <div>
-              <h1 className="text-3xl font-bold text-white">Vendors</h1>
+              <h1 className="text-3xl font-bold text-white">Deals</h1>
               <p className="text-gray-400 text-sm mt-1">
                 Referral websites and referred clients at a glance.
               </p>
@@ -232,13 +232,7 @@ export default function VendorsList() {
                           <div className="w-11 h-11 flex items-center justify-center bg-gradient-to-br from-green-500 to-green-600 rounded-xl">
                             <User className="w-5 h-5 text-white" />
                           </div>
-                          <span
-                            className={`text-[11px] font-medium uppercase tracking-wide px-2.5 py-1 rounded-full border ${
-                              STATUS_STYLES[r.status] || STATUS_STYLES.TRIAL
-                            }`}
-                          >
-                            {r.status}
-                          </span>
+                           
                         </div>
 
                         <h3 className="font-semibold text-white text-lg mb-1">

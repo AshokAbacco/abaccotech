@@ -26,6 +26,11 @@ import Register from "./pages/auth/Register";
 
 import Dashboard from "./pages/dashboard/Dashboard";
 import VendorsList from "./pages/dashboard/VendorsList";
+import FollowUps from "./pages/dashboard/FollowUps";
+import Renewals from "./pages/dashboard/Renewals";
+import RenewalsCancelled from "./pages/dashboard/RenewalsCancelled";
+import Reports from "./pages/dashboard/Reports";
+import Settings from "./pages/dashboard/Settings";
 import Admin from "./pages/dashboard/admin/Admin"
 import UserDetails from "./pages/dashboard/admin/UserDetails"
 
@@ -63,6 +68,11 @@ function App() {
          <Route path="/vendors-list" element={<VendorsList />} />
          <Route path="/admin" element={<Admin />} />
         <Route path="/admin/users/:id" element={<UserDetails />} />
+        <Route path="/follow-ups" element={<FollowUps />} />
+        <Route path="/renewals" element={<Renewals />} />
+        <Route path="/renewals-cancelled" element={<RenewalsCancelled />} />
+        <Route path="/reports" element={<Reports />} />
+        <Route path="/settings" element={<Settings />} />
 
       </Routes>
     </BrowserRouter>

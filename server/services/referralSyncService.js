@@ -60,6 +60,16 @@ export const syncBounceCureReferrals = async () => {
     // a distinctive short message here, very different from a JSON 429 your
     // own Express code would produce. Also surface Retry-After if present.
     const retryAfter = response.headers.get("retry-after");
+    // Log every response header — express-rate-limit normally attaches
+    // RateLimit-Limit / RateLimit-Remaining / RateLimit-Policy (or the older
+    // X-RateLimit-* names). Their presence/absence tells us whether this is
+    // really express-rate-limit inside Bounce Cure's own code, or something
+    // injected by Render/a CDN in front of it.
+    const headerDump = {};
+    response.headers.forEach((value, key) => {
+      headerDump[key] = value;
+    });
+
     let bodyPreview = "";
     try {
       bodyPreview = (await response.text()).slice(0, 500);
@@ -70,7 +80,7 @@ export const syncBounceCureReferrals = async () => {
     console.error(
       `❌ Bounce Cure export failed — status ${response.status}${
         retryAfter ? `, retry-after: ${retryAfter}` : ""
-      }\nResponse body preview:\n${bodyPreview}`
+      }\nAll response headers:\n${JSON.stringify(headerDump, null, 2)}\nResponse body preview:\n${bodyPreview}`
     );
 
     throw new SyncError(

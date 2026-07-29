@@ -1,12 +1,26 @@
 // src/Components/Sidebar.jsx
 import React from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { LayoutDashboard, Users, ShieldCheck, LogOut } from "lucide-react";
+import {
+  LayoutDashboard,
+  Handshake,
+  PhoneCall,
+  RefreshCw,
+  XCircle,
+  BarChart3,
+  Settings,
+  LogOut,
+} from "lucide-react";
 
 const allMenuItems = [
   { label: "Dashboard", icon: LayoutDashboard, path: "/dashboard", adminOnly: false },
-  { label: "Vendors", icon: Users, path: "/vendors-list", adminOnly: false },
-  { label: "Admin", icon: ShieldCheck, path: "/admin", adminOnly: true },
+  { label: "Vendors", icon: Handshake, path: "/vendors-list", adminOnly: false },
+  { label: "Deals", icon: Handshake, path: "/vendors-lis", adminOnly: false },
+  { label: "Follow Ups", icon: PhoneCall, path: "/follow-ups", adminOnly: false },
+  { label: "Renewals", icon: RefreshCw, path: "/renewals", adminOnly: false },
+  { label: "Renewal Cancelled", icon: XCircle, path: "/renewals-cancelled", adminOnly: false },
+  { label: "Reports", icon: BarChart3, path: "/reports", adminOnly: false },
+  { label: "Settings", icon: Settings, path: "/settings", adminOnly: false },
 ];
 
 export default function Sidebar() {
@@ -14,7 +28,6 @@ export default function Sidebar() {
   const user = JSON.parse(localStorage.getItem("user") || "null");
   const isAdmin = user?.role === "admin";
 
-  // Regular users only see Dashboard + Vendors; admins see everything.
   const menuItems = allMenuItems.filter((item) => !item.adminOnly || isAdmin);
 
   const handleLogout = () => {
@@ -33,7 +46,7 @@ export default function Sidebar() {
       </div>
 
       {/* Menu */}
-      <nav className="flex-1 px-3 py-6 space-y-1">
+      <nav className="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
         {menuItems.map(({ label, icon: Icon, path }) => (
           <NavLink
             key={path}

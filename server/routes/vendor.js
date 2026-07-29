@@ -4,7 +4,7 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 import { PrismaClient } from "@prisma/client";
-import { protect } from "../middleware/authMiddleware.js";
+import { protect, requireAdmin } from "../middleware/authMiddleware.js";
 
 const prisma = new PrismaClient();
 const router = express.Router();
@@ -172,15 +172,20 @@ router.post("/", protect, uploadFields, async (req, res) => {
 
     // 🟢 One vendor record per user: create on first submission,
     // update (and append any newly uploaded files) on resubmission.
+    // 🔒 New submissions/resubmissions reset status to PENDING so an edit
+    // to already-approved details doesn't stay silently APPROVED without
+    // an admin re-reviewing it.
     const vendor = await prisma.vendor.upsert({
       where: { userId: req.user.userId },
       create: {
         ...vendorData,
+        status: "PENDING",
         userId: req.user.userId,
         files: { create: fileRecords },
       },
       update: {
         ...vendorData,
+        status: "PENDING", // 🆕 re-review required after any edit
         ...(fileRecords.length > 0 && { files: { create: fileRecords } }),
       },
       include: { files: true },
@@ -200,8 +205,11 @@ router.post("/", protect, uploadFields, async (req, res) => {
   }
 });
 
-// 🟢 GET /vendor — list all vendors (admin use)
-router.get("/", async (req, res) => {
+// 🔒 FIXED — GET /vendor — list all vendors.
+// This was previously PUBLIC with no auth at all, exposing every vendor's
+// bank account number, IFSC, PAN, Aadhaar, and uploaded ID document paths to
+// anyone on the internet. Now admin-only.
+router.get("/", protect, requireAdmin, async (req, res) => {
   try {
     const vendors = await prisma.vendor.findMany({
       include: { files: true },
@@ -214,8 +222,10 @@ router.get("/", async (req, res) => {
   }
 });
 
-// 🟢 GET /vendor/:id — get single vendor
-router.get("/:id", async (req, res) => {
+// 🔒 FIXED — GET /vendor/:id — get single vendor.
+// Same issue as above: was public, letting anyone enumerate vendor IDs to
+// pull KYC/financial details one by one. Now admin-only.
+router.get("/:id", protect, requireAdmin, async (req, res) => {
   try {
     const vendor = await prisma.vendor.findUnique({
       where: { id: Number(req.params.id) },
@@ -228,6 +238,42 @@ router.get("/:id", async (req, res) => {
   } catch (err) {
     console.error("❌ Vendor fetch error:", err);
     return res.status(500).json({ success: false, message: "Failed to fetch vendor." });
+  }
+});
+
+// 🆕 PATCH /vendor/:id/status (admin only) — approve or reject a vendor's
+// KYC submission. This route didn't exist before — the Vendor model has a
+// status field (PENDING/APPROVED/REJECTED) but nothing ever updated it
+// after the initial PENDING on submission.
+router.patch("/:id/status", protect, requireAdmin, async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    const { status } = req.body;
+
+    if (Number.isNaN(id)) {
+      return res.status(400).json({ success: false, message: "Invalid vendor id." });
+    }
+
+    const allowedStatuses = ["PENDING", "APPROVED", "REJECTED"];
+    if (!allowedStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: `Status must be one of: ${allowedStatuses.join(", ")}`,
+      });
+    }
+
+    const vendor = await prisma.vendor.update({
+      where: { id },
+      data: { status },
+    });
+
+    return res.json({ success: true, message: `Vendor marked as ${status}`, vendor });
+  } catch (err) {
+    if (err.code === "P2025") {
+      return res.status(404).json({ success: false, message: "Vendor not found." });
+    }
+    console.error("❌ Vendor status update error:", err);
+    return res.status(500).json({ success: false, message: "Failed to update vendor status." });
   }
 });
 
