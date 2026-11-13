@@ -192,7 +192,7 @@ function TemplateCard({ template: t, onUse }) {
     (t.buttons || []).filter((b) => b.hasVariable).length;
 
   return (
-    <div className={`${cardCls} p-5 flex flex-col`}>
+    <div className={`${cardCls} p-5 flex flex-col h-full`}>
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className="min-w-0">
           <p className="text-white font-semibold break-all">{t.name}</p>
@@ -204,7 +204,8 @@ function TemplateCard({ template: t, onUse }) {
         <StatusBadge status={t.status} map={TEMPLATE_STATUS} />
       </div>
 
-      <MessagePreview template={t} />
+      {/* Fixed height so every card lines up; long templates scroll inside */}
+      <MessagePreview template={t} height="h-[440px]" />
 
       <div className="mt-4 flex items-center justify-between gap-3 text-xs text-gray-500">
         <span>
