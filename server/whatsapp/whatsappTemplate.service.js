@@ -120,6 +120,8 @@ export function toTemplateDto(t) {
     buttons: t.buttons || [],
     usable: t.status === "APPROVED" && !unsupportedReason,
     unsupportedReason,
+    hidden: Boolean(t.hidden),
+    hiddenAt: t.hiddenAt || null,
     lastSyncedAt: t.lastSyncedAt,
   };
 }
@@ -185,6 +187,17 @@ export async function listTemplates({ includeAll = false } = {}) {
     orderBy: [{ status: "asc" }, { name: "asc" }],
   });
   return templates.map(toTemplateDto);
+}
+
+// 🆕 Hide / unhide a template in the dashboard. Only this flag changes: the
+// template stays in our database and in Meta, sync keeps the flag, and
+// campaigns already using it keep sending.
+export async function setTemplateHidden(id, hidden) {
+  const template = await prisma.whatsAppTemplate.update({
+    where: { id },
+    data: { hidden, hiddenAt: hidden ? new Date() : null },
+  });
+  return toTemplateDto(template);
 }
 
 // ── Campaign values: validation + building the message ──────────────────

@@ -81,7 +81,9 @@ export default function WhatsAppCampaignForm() {
           isEdit ? waApi.campaign(id) : Promise.resolve(null),
         ]);
         if (!alive) return;
-        const usable = tplRes.templates.filter((t) => t.usable);
+        // Hidden templates stay out of the dropdown, except the one a draft already uses.
+        const draftTemplateId = campRes?.campaign?.templateId;
+        const usable = tplRes.templates.filter((t) => t.usable && (!t.hidden || t.id === draftTemplateId));
         setTemplates(usable);
         setTags(tagRes.tags.filter((t) => t.tag));
 
